@@ -211,7 +211,7 @@ function updateScore() {
 }
 
 function updateBallSpeed() {
-    const speedIncreaseFactor = 1.1;
+    const speedIncreaseFactor = 1.5;
     ball.speed *= speedIncreaseFactor;
 
     // Update the ball's velocity components based on the new speed
@@ -532,6 +532,10 @@ function checkForRandomPowerupChance() {
 
 function updatePowerupGauge() {
     if (powerupDuration > 0) {
+        // Decrease the duration of the wide paddle powerup
+        if (widePaddleActive) {
+            --powerupDuration;
+        }
         --powerupDuration;
 
         if (powerupDuration === 0) {
