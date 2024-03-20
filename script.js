@@ -111,7 +111,6 @@ function setPaddlePosition(horizontalPosition, verticalPosition) {
 function setPaddleWidth(newWidth) { paddle.width = newWidth; }
 function getOriginalPaddleWidth() { return ORIGINAL_PADDLE_WIDTH; }
 
-
 function setBallPosition(horizontalPosition, verticalPosition) {
     ball.x = horizontalPosition;
     ball.y = verticalPosition;
@@ -211,7 +210,7 @@ function updateScore() {
 }
 
 function updateBallSpeed() {
-    const speedIncreaseFactor = 1.5;
+    const speedIncreaseFactor = 1.4;
     ball.speed *= speedIncreaseFactor;
 
     // Update the ball's velocity components based on the new speed
