@@ -261,7 +261,7 @@ function resetPaddle() {
 /// GAME LOOP
 /////////////////////////
 
-const POWERUP_CHANCE = 0.5;
+const POWERUP_CHANCE = 0.6;
 const POWERUP_COOLDOWN = 3;
 
 const WIDE_BAR_DURATION = 6;
