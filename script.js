@@ -210,7 +210,7 @@ function updateScore() {
 }
 
 function updateBallSpeed() {
-    const speedIncreaseFactor = 1.4;
+    const speedIncreaseFactor = 1.3;
     ball.speed *= speedIncreaseFactor;
 
     // Update the ball's velocity components based on the new speed
@@ -265,7 +265,7 @@ const POWERUP_CHANCE = 0.5;
 const POWERUP_COOLDOWN = 3;
 
 const WIDE_BAR_DURATION = 6;
-const SLOW_BALL_DURATION = 4;
+const SLOW_BALL_DURATION = 3;
 const BIG_BALL_DURATION = 6;
 
 // Global flags for each powerup
@@ -281,7 +281,7 @@ let widePaddleDuration = 0;
 let slowBallDuration = 0;
 let bigBallDuration = 0;
 
-let previousBallSpeed = 0;
+let previousBallSpeed = 1;
 
 let score = 0;
 let isGameOver = false;
@@ -544,7 +544,8 @@ function updatePowerupGauge() {
             }
 
             if (slowBallActive) {
-                setBallSpeed(ORIGINAL_BALL_SPEED); // Reset ball speed
+                setBallSpeed(previousBallSpeed); // Reset ball speed
+                //ball.speed = previousBallSpeed;
                 slowBallActive = false;
             }
 
