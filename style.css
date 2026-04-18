@@ -322,3 +322,13 @@ p {
     outline: none;
 }
 .name-input:focus { border-color: #fed90f; }
+
+#lb-link {
+    display: block;
+    margin-top: 12px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 9px;
+    color: #09f1b8;
+    text-decoration: none;
+}
+#lb-link:hover { color: #fed90f; }
