@@ -291,10 +291,8 @@ function updateScore() {
 function updateBallSpeed() {
     if (ball.speed >= 3.5) return;
     const speedIncreaseFactor = 1.3;
-    ball.speed *= speedIncreaseFactor;
+    ball.speed = Math.min(ball.speed * speedIncreaseFactor, 3.5);
 
-    // Update the ball's velocity components based on the new speed
-    // Preserve the direction of the ball while updating speed
     ball.dx = (ball.dx / Math.abs(ball.dx)) * ball.speed;
     ball.dy = (ball.dy / Math.abs(ball.dy)) * ball.speed;
 }
@@ -1026,10 +1024,6 @@ function startTimer() {
     timerInterval = setInterval(function () {
         timerSeconds--;
         updateTimerDisplay();
-        // Speed up ball in last 10 seconds
-        if (timerSeconds === 10) {
-            setBallSpeed(ball.speed * 1.3);
-        }
         if (Math.ceil(timerSeconds) <= 5 && timerSeconds > 0) sfxHurry();
         if (timerSeconds <= 0) {
             clearInterval(timerInterval);
