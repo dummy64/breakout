@@ -323,7 +323,7 @@ function hideWinScreen() {
 function resetBall() {
     ball.x = canvas.width / 2;
     ball.y = paddle.y - ball.height;
-    ball.speed = 2;
+    ball.speed = 4;
     ball.dx = ball.speed * (Math.random() < 0.5 ? -1 : 1);
     ball.dy = -ball.speed;
 }
