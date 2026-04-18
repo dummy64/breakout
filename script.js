@@ -113,8 +113,7 @@ canvas.height = CANVAS_HEIGHT;
 const context = canvas.getContext('2d');
 
 const LVL1 = [
-    [],
-    [],
+    [], [], [],
     ['C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'],
     ['R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R'],
     ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'],
@@ -123,7 +122,7 @@ const LVL1 = [
 ];
 
 const LVL2 = [
-    [],
+    [], [], [],
     ['C', 'X', 'C', 'X', 'C', 'X', 'C', 'X', 'C', 'X'],
     ['X', 'R', 'X', 'R', 'X', 'R', 'X', 'R', 'X', 'R'],
     ['O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
@@ -132,7 +131,7 @@ const LVL2 = [
 ];
 
 const LVL3 = [
-    [],
+    [], [], [],
     ['X', 'X', 'F', 'F', 'F', 'F', 'F', 'F', 'X', 'X'],
     ['X', 'B', 'X', 'X', 'X', 'X', 'X', 'X', 'B', 'X'],
     ['L', 'X', 'X', 'C', 'X', 'X', 'C', 'X', 'X', 'L'],
@@ -980,12 +979,13 @@ var levelFlashTimer = 0;
 
 function advanceLevel() {
     sfxLevelUp();
-    // Cycle to next level, or loop back with bonus
-    if (currentLevel < 3) {
-        currentLevel++;
-    } else {
-        currentLevel = 1; // loop back — endless play
+    if (currentLevel >= 3) {
+        // Completed all 3 levels — game won!
+        isGameOver = true;
+        endRound();
+        return;
     }
+    currentLevel++;
     // Bonus time for clearing a level
     addBonusTime(10);
     // Reload bricks for new level
@@ -1083,7 +1083,7 @@ function endRound() {
     renderLeaderboard();
     document.getElementById('end-overlay').style.display = 'flex';
     // Focus first initial input
-    setTimeout(function(){ document.getElementById('initial-1').focus(); }, 100);
+    setTimeout(function(){ document.getElementById('player-name').focus(); }, 100);
 }
 
 function restartGame() {
@@ -1101,71 +1101,51 @@ function toggleFullscreen() {
 }
 
 // ===== NAME ENTRY =====
-(function() {
-    // Auto-advance between initial inputs
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('initial-input') && e.target.value.length === 1) {
-            var next = e.target.nextElementSibling;
-            if (next && next.classList.contains('initial-input')) next.focus();
-        }
-    });
-    // Allow backspace to go back
-    document.addEventListener('keydown', function(e) {
-        if (e.target.classList.contains('initial-input') && e.key === 'Backspace' && e.target.value === '') {
-            var prev = e.target.previousElementSibling;
-            if (prev && prev.classList.contains('initial-input')) { prev.focus(); prev.value = ''; }
-        }
-    });
-})();
-
-function getInitials() {
-    var a = document.getElementById('initial-1').value.toUpperCase();
-    var b = document.getElementById('initial-2').value.toUpperCase();
-    var c = document.getElementById('initial-3').value.toUpperCase();
-    return (a || '_') + (b || '_') + (c || '_');
-}
-
-function clearInitials() {
-    document.getElementById('initial-1').value = '';
-    document.getElementById('initial-2').value = '';
-    document.getElementById('initial-3').value = '';
-}
-
 function submitAndRestart() {
-    saveScore(score, getInitials());
-    clearInitials();
+    var name = document.getElementById('player-name').value.trim() || 'Anonymous';
+    saveScore(score, name, Math.ceil(timerSeconds), currentLevel);
+    document.getElementById('player-name').value = '';
     document.getElementById('end-overlay').style.display = 'none';
     beginGame(useGesture);
 }
 
-// ===== LEADERBOARD (localStorage) =====
+// ===== LEADERBOARD (localStorage) — stores ALL scores =====
 
-function getLeaderboard() {
+function getAllScores() {
     try {
-        return JSON.parse(localStorage.getItem('breakout_lb')) || [];
+        return JSON.parse(localStorage.getItem('breakout_all')) || [];
     } catch (e) {
         return [];
     }
 }
 
-function saveScore(s, name) {
-    var lb = getLeaderboard();
-    lb.push({ name: name || '???', score: s });
-    lb.sort(function (a, b) { return b.score - a.score; });
-    lb = lb.slice(0, 5);
-    localStorage.setItem('breakout_lb', JSON.stringify(lb));
+function saveScore(s, name, timeLeft, level) {
+    var entry = {
+        name: name,
+        score: s,
+        timeLeft: timeLeft,
+        level: level,
+        date: new Date().toLocaleString()
+    };
+    // Save to full history
+    var all = getAllScores();
+    all.push(entry);
+    localStorage.setItem('breakout_all', JSON.stringify(all));
 }
 
 function renderLeaderboard() {
-    var lb = getLeaderboard();
+    var all = getAllScores();
+    // Sort by score descending for display
+    all.sort(function (a, b) { return b.score - a.score; });
+    var top = all.slice(0, 10);
     var list = document.getElementById('lb-list');
     list.innerHTML = '';
-    for (var i = 0; i < lb.length; i++) {
+    for (var i = 0; i < top.length; i++) {
         var li = document.createElement('li');
-        li.textContent = (i + 1) + '. ' + lb[i].name + ' - ' + lb[i].score + ' pts';
+        li.textContent = (i + 1) + '. ' + top[i].name + ' - ' + top[i].score + ' pts (L' + top[i].level + ', ' + top[i].timeLeft + 's left)';
         list.appendChild(li);
     }
-    if (lb.length === 0) {
+    if (top.length === 0) {
         list.innerHTML = '<li>No scores yet</li>';
     }
 }

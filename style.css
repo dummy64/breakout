@@ -299,7 +299,7 @@ p {
 }
 #btn-fullscreen:hover { border-color: #09f1b8; }
 
-/* Name entry initials */
+/* Name entry */
 #name-entry {
     font-family: 'Press Start 2P', cursive;
     font-size: 12px;
@@ -307,23 +307,18 @@ p {
     margin-bottom: 14px;
     text-align: center;
 }
-#initials-box {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 8px;
-}
-.initial-input {
-    width: 36px;
-    height: 42px;
+.name-input {
+    display: block;
+    margin: 10px auto 0;
+    width: 240px;
+    padding: 8px 12px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 20px;
+    font-size: 14px;
     text-align: center;
-    text-transform: uppercase;
     background: #111;
     color: #fed90f;
     border: 2px solid #09f1b8;
     border-radius: 4px;
     outline: none;
 }
-.initial-input:focus { border-color: #fed90f; }
+.name-input:focus { border-color: #fed90f; }
