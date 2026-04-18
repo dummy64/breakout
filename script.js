@@ -334,6 +334,9 @@ function loop() {
         // Draw Paddle
         drawPaddle();
 
+        // Draw timer warning
+        drawTimerWarning();
+
         // Check Remaining Bricks
         if (bricks.length == 0) {
             isGameOver = true;
@@ -473,6 +476,9 @@ function checkBallBrickCollision() {
             // Increment score
             ++score;
             updateScore();
+
+            // Bonus time for brick hit
+            if (gameActive) addBonusTime(0.5);
 
             // Decrement Powerup Cooldown
             --powerupCooldown;
@@ -887,11 +893,17 @@ function startWithKeyboard() {
 
 function startTimer() {
     timerSeconds = TIMER_DURATION;
+    timerMs = TIMER_DURATION * 1000;
+    lastTimerTick = performance.now();
     updateTimerDisplay();
     clearInterval(timerInterval);
     timerInterval = setInterval(function () {
         timerSeconds--;
         updateTimerDisplay();
+        // Speed up ball in last 10 seconds
+        if (timerSeconds === 10) {
+            setBallSpeed(ball.speed * 1.3);
+        }
         if (timerSeconds <= 0) {
             clearInterval(timerInterval);
             isGameOver = true;
@@ -900,8 +912,36 @@ function startTimer() {
     }, 1000);
 }
 
+function addBonusTime(sec) {
+    timerSeconds = Math.min(timerSeconds + sec, 60);
+    updateTimerDisplay();
+}
+
 function updateTimerDisplay() {
-    document.getElementById('timer').textContent = timerSeconds + 's';
+    var el = document.getElementById('timer');
+    el.textContent = timerSeconds + 's';
+    if (timerSeconds <= 5) {
+        el.style.color = '#ff2244';
+        el.style.animation = 'pulse 0.4s ease-in-out infinite';
+    } else if (timerSeconds <= 15) {
+        el.style.color = '#fed90f';
+        el.style.animation = 'none';
+    } else {
+        el.style.color = '#09f1b8';
+        el.style.animation = 'none';
+    }
+}
+
+function drawTimerWarning() {
+    if (timerSeconds <= 5 && timerSeconds > 0 && gameActive) {
+        context.save();
+        context.globalAlpha = 0.5 + 0.5 * Math.sin(performance.now() / 150);
+        context.fillStyle = '#ff2244';
+        context.font = '20px "Press Start 2P", cursive';
+        context.textAlign = 'center';
+        context.fillText('HURRY!', canvas.width / 2, canvas.height / 2);
+        context.restore();
+    }
 }
 
 function endRound() {
