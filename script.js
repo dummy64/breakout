@@ -5,8 +5,8 @@ let timerSeconds = 30;
 let timerInterval = null;
 const TIMER_DURATION = 90;
 
-const CANVAS_WIDTH = 1100;
-const CANVAS_HEIGHT = 450;
+const CANVAS_WIDTH = 800;
+const CANVAS_HEIGHT = 600;
 
 // ===== SOUND ENGINE (Web Audio oscillator, no files needed) =====
 var audioCtx = null;
@@ -490,7 +490,6 @@ function showStartMessage() {
 // Add: 1. AI OVERRIDE 2. MULTI-BALL
 const POWERUP_TYPES = {
     WIDER_BAR: 'wider_bar',
-    SLOW_BALL: 'slow_ball',
     BIG_BALL: 'big_ball'
 }
 
