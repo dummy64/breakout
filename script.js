@@ -1,3 +1,10 @@
+// ===== GESTURE EDITION STATE =====
+let useGesture = false;          // true = hand control, false = keyboard
+let gameActive = false;          // true once player starts a round
+let timerSeconds = 30;
+let timerInterval = null;
+const TIMER_DURATION = 30;
+
 const CANVAS_WIDTH = 400;
 const CANVAS_HEIGHT = 500;
 
@@ -289,7 +296,17 @@ let isGameOver = false;
 let isPaused = false;
 
 createGameGrid(LVL1);
-loop();
+// Don't auto-start: wait for gesture or keyboard start
+isPaused = true;
+
+// Poll for hand detection to auto-dismiss start overlay
+(function waitForHand() {
+    if (window.gestureState && window.gestureState.handDetected) {
+        beginGame(true);
+    } else {
+        requestAnimationFrame(waitForHand);
+    }
+})();
 
 function loop() {
     if (!isGameOver && !isPaused) {
@@ -320,6 +337,7 @@ function loop() {
         // Check Remaining Bricks
         if (bricks.length == 0) {
             isGameOver = true;
+            endRound();
         }
     }
     else if (isPaused) {
@@ -396,8 +414,16 @@ const POWERUP_TYPES = {
 }
 
 function movePaddle() {
-    paddle.x += paddle.dx;
-    // Collision with walls
+    // Gesture control: directly set paddle.x from hand position
+    if (useGesture && window.gestureState && window.gestureState.active) {
+        var playArea = CANVAS_WIDTH - (WALL_WIDTH * 2) - paddle.width;
+        var targetX = WALL_WIDTH + window.gestureState.paddleX * playArea;
+        paddle.x = targetX;
+        paddle.dx = 0; // suppress keyboard velocity during gesture
+    } else {
+        paddle.x += paddle.dx;
+    }
+    // Clamp within walls
     if (paddle.x < WALL_WIDTH) {
         paddle.x = WALL_WIDTH;
     }
@@ -423,6 +449,7 @@ function moveBall() {
     // Reset ball if it goes below the screen
     if (ball.y > canvas.height) {
         isGameOver = true;
+        endRound();
     }
 }
 function checkBallPaddleCollision() {
@@ -834,4 +861,97 @@ function handleTilt(e) {
     // You may need to adjust the sensitivity to get the desired responsiveness
     const sensitivity = 1.5;
     paddle.dx = gamma * sensitivity;
+}
+
+//////////////////////////////
+/// GESTURE EDITION: TIMER, LEADERBOARD, START/RESTART
+/////////////////////////
+
+function beginGame(gesture) {
+    useGesture = gesture;
+    gameActive = true;
+
+    // Hide start overlay
+    document.getElementById('start-overlay').style.display = 'none';
+    document.getElementById('end-overlay').style.display = 'none';
+
+    // Reset and start
+    resetGame(getCurrentLevelGrid());
+    resetBall();
+    startTimer();
+}
+
+function startWithKeyboard() {
+    beginGame(false);
+}
+
+function startTimer() {
+    timerSeconds = TIMER_DURATION;
+    updateTimerDisplay();
+    clearInterval(timerInterval);
+    timerInterval = setInterval(function () {
+        timerSeconds--;
+        updateTimerDisplay();
+        if (timerSeconds <= 0) {
+            clearInterval(timerInterval);
+            isGameOver = true;
+            endRound();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    document.getElementById('timer').textContent = timerSeconds + 's';
+}
+
+function endRound() {
+    clearInterval(timerInterval);
+    gameActive = false;
+
+    // Hide original game-over/winner overlays (we use our own)
+    hideGameOver();
+    hideWinScreen();
+
+    // Save score and show end overlay
+    saveScore(score);
+    document.getElementById('final-score').textContent = 'SCORE: ' + score;
+    renderLeaderboard();
+    document.getElementById('end-overlay').style.display = 'flex';
+}
+
+function restartGame() {
+    document.getElementById('end-overlay').style.display = 'none';
+    beginGame(useGesture);
+}
+
+// ===== LEADERBOARD (localStorage) =====
+
+function getLeaderboard() {
+    try {
+        return JSON.parse(localStorage.getItem('breakout_lb')) || [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveScore(s) {
+    var lb = getLeaderboard();
+    lb.push(s);
+    lb.sort(function (a, b) { return b - a; });
+    lb = lb.slice(0, 5);
+    localStorage.setItem('breakout_lb', JSON.stringify(lb));
+}
+
+function renderLeaderboard() {
+    var lb = getLeaderboard();
+    var list = document.getElementById('lb-list');
+    list.innerHTML = '';
+    for (var i = 0; i < lb.length; i++) {
+        var li = document.createElement('li');
+        li.textContent = (i + 1) + '. ' + lb[i] + ' pts';
+        list.appendChild(li);
+    }
+    if (lb.length === 0) {
+        list.innerHTML = '<li>No scores yet</li>';
+    }
 }

@@ -173,3 +173,115 @@ p {
     box-sizing: border-box;
 }
 
+
+/* ===== GESTURE EDITION ADDITIONS ===== */
+
+/* Webcam preview – small mirrored feed in bottom-right */
+#webcam {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 160px;
+    height: 120px;
+    border: 2px solid #09f1b8;
+    border-radius: 8px;
+    transform: scaleX(-1);
+    z-index: 100;
+    object-fit: cover;
+    opacity: 0.85;
+}
+
+/* Timer display */
+#timer {
+    font-family: 'Press Start 2P', cursive;
+    color: #fed90f;
+    font-size: 16px;
+    padding: 5px;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Start overlay */
+#start-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 20;
+}
+#start-overlay p {
+    font-size: 4em;
+    margin: 0;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+#start-overlay .start-sub {
+    font-family: 'Press Start 2P', cursive;
+    color: #09f1b8;
+    font-size: 14px;
+    margin-top: 10px;
+}
+#btn-start-keyboard {
+    margin-top: 20px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    padding: 8px 16px;
+    background: transparent;
+    color: #666;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+}
+#btn-start-keyboard:hover { color: #fff; border-color: #09f1b8; }
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.7; }
+}
+
+/* End overlay (score + leaderboard) */
+#end-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.88);
+    z-index: 20;
+    font-family: 'Press Start 2P', cursive;
+    color: white;
+}
+#final-score {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: #fed90f;
+}
+#leaderboard h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #09f1b8;
+}
+#lb-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+    font-size: 11px;
+    line-height: 2;
+}
+#lb-list li { color: #ccc; }
+#lb-list li:first-child { color: #fed90f; }
+
+#btn-restart {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    padding: 10px 24px;
+    background: #09f1b8;
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+#btn-restart:hover { background: #00a2ff; }

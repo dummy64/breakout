@@ -1,34 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Breakout HTML Edition</title>
+    <title>Breakout – Gesture Edition</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="path/to/your/compiled.css">
+
+    <!-- MediaPipe CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
+    <!-- Webcam feed (mirrored, small corner preview) -->
+    <video id="webcam" autoplay playsinline></video>
+
     <pwr id="powerupText"></pwr>
 
     <div id="top-container">
         <div id="score">Score: 0</div>
+        <div id="timer"></div>
         <div id="level">LEVEL 1</div>
     </div>
-    
 
     <div id="game-container">
         <canvas id="game"></canvas>
+
+        <!-- "Show your hand" start overlay -->
+        <div id="start-overlay">
+            <p>✋</p>
+            <span class="start-sub">Show your hand to start</span>
+            <button id="btn-start-keyboard" onclick="startWithKeyboard()">or press here for keyboard</button>
+        </div>
+
         <div id="game-over">
             <p>GAME OVER</p>
         </div>
         <div id="winner">
             <p>YOU WIN</p>
         </div>
+
+        <!-- End-of-round overlay -->
+        <div id="end-overlay">
+            <div id="final-score"></div>
+            <div id="leaderboard">
+                <h3>🏆 TOP 5</h3>
+                <ol id="lb-list"></ol>
+            </div>
+            <button id="btn-restart" onclick="restartGame()">PLAY AGAIN</button>
+        </div>
     </div>
 
+    <script src="gesture.js"></script>
     <script src="script.js"></script>
 </body>
-
 </html>
