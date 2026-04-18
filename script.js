@@ -3,10 +3,10 @@ let useGesture = false;          // true = hand control, false = keyboard
 let gameActive = false;          // true once player starts a round
 let timerSeconds = 30;
 let timerInterval = null;
-const TIMER_DURATION = 30;
+const TIMER_DURATION = 60;
 
-const CANVAS_WIDTH = 400;
-const CANVAS_HEIGHT = 500;
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 700;
 
 const NUM_BRICKS_PER_ROW = 14;
 const BRICK_GAP = 2;
@@ -88,7 +88,7 @@ const colorMap = {
 
 const paddle = {
     x: canvas.width / 2 - PADDLE_WIDTH / 2,
-    y: 440,
+    y: CANVAS_HEIGHT - 60,
     width: PADDLE_WIDTH,
     height: PADDLE_HEIGHT,
     dx: 0 // Paddle x velocity
@@ -258,10 +258,10 @@ function resetBall() {
 
 function resetPaddle() {
     paddle.x = canvas.width / 2 - PADDLE_WIDTH / 2;
-    paddle.y = 440;
-    width: PADDLE_WIDTH;
-    height: PADDLE_HEIGHT;
-    dx: 0;
+    paddle.y = CANVAS_HEIGHT - 60;
+    paddle.width = PADDLE_WIDTH;
+    paddle.height = PADDLE_HEIGHT;
+    paddle.dx = 0;
 }
 
 
@@ -337,10 +337,12 @@ function loop() {
         // Draw timer warning
         drawTimerWarning();
 
-        // Check Remaining Bricks
+        // Draw level-up flash
+        drawLevelFlash();
+
+        // Check Remaining Bricks — advance level or end
         if (bricks.length == 0) {
-            isGameOver = true;
-            endRound();
+            advanceLevel();
         }
     }
     else if (isPaused) {
@@ -876,6 +878,8 @@ function handleTilt(e) {
 function beginGame(gesture) {
     useGesture = gesture;
     gameActive = true;
+    currentLevel = 1;
+    levelFlashTimer = 0;
 
     // Hide start overlay
     document.getElementById('start-overlay').style.display = 'none';
@@ -885,6 +889,40 @@ function beginGame(gesture) {
     resetGame(getCurrentLevelGrid());
     resetBall();
     startTimer();
+}
+
+var levelFlashTimer = 0;
+
+function advanceLevel() {
+    // Cycle to next level, or loop back with bonus
+    if (currentLevel < 3) {
+        currentLevel++;
+    } else {
+        currentLevel = 1; // loop back — endless play
+    }
+    // Bonus time for clearing a level
+    addBonusTime(10);
+    // Reload bricks for new level
+    bricks.length = 0;
+    createGameGrid(getCurrentLevelGrid());
+    // Reset ball position but keep score and timer
+    resetBall();
+    resetPaddle();
+    // Flash level text
+    levelFlashTimer = 90; // frames
+}
+
+function drawLevelFlash() {
+    if (levelFlashTimer > 0) {
+        levelFlashTimer--;
+        context.save();
+        context.globalAlpha = levelFlashTimer / 90;
+        context.fillStyle = '#09f1b8';
+        context.font = '28px "Press Start 2P", cursive';
+        context.textAlign = 'center';
+        context.fillText('LEVEL ' + currentLevel + '!', canvas.width / 2, canvas.height / 2);
+        context.restore();
+    }
 }
 
 function startWithKeyboard() {
@@ -913,7 +951,7 @@ function startTimer() {
 }
 
 function addBonusTime(sec) {
-    timerSeconds = Math.min(timerSeconds + sec, 60);
+    timerSeconds = Math.min(timerSeconds + sec, 90);
     updateTimerDisplay();
 }
 
