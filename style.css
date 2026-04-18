@@ -285,3 +285,45 @@ p {
     cursor: pointer;
 }
 #btn-restart:hover { background: #00a2ff; }
+
+/* Fullscreen button */
+#btn-fullscreen {
+    font-size: 20px;
+    background: transparent;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px 8px;
+    line-height: 1;
+}
+#btn-fullscreen:hover { border-color: #09f1b8; }
+
+/* Name entry initials */
+#name-entry {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    color: #09f1b8;
+    margin-bottom: 14px;
+    text-align: center;
+}
+#initials-box {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+.initial-input {
+    width: 36px;
+    height: 42px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 20px;
+    text-align: center;
+    text-transform: uppercase;
+    background: #111;
+    color: #fed90f;
+    border: 2px solid #09f1b8;
+    border-radius: 4px;
+    outline: none;
+}
+.initial-input:focus { border-color: #fed90f; }

@@ -8,6 +8,91 @@ const TIMER_DURATION = 60;
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 700;
 
+// ===== SOUND ENGINE (Web Audio oscillator, no files needed) =====
+var audioCtx = null;
+function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+}
+function playTone(freq, duration, type) {
+    try {
+        var ctx = getAudioCtx();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = type || 'square';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+    } catch (e) {}
+}
+function sfxBrickHit()  { playTone(520 + Math.random() * 200, 0.08, 'square'); }
+function sfxLevelUp()   { playTone(600, 0.1); setTimeout(function(){ playTone(800, 0.1); }, 100); setTimeout(function(){ playTone(1000, 0.15); }, 200); }
+function sfxGameOver()  { playTone(200, 0.3, 'sawtooth'); setTimeout(function(){ playTone(150, 0.4, 'sawtooth'); }, 300); }
+function sfxHurry()     { playTone(880, 0.05, 'square'); }
+
+// ===== PARTICLES =====
+var particles = [];
+function spawnParticles(x, y, color) {
+    for (var i = 0; i < 8; i++) {
+        particles.push({
+            x: x, y: y,
+            dx: (Math.random() - 0.5) * 4,
+            dy: (Math.random() - 0.5) * 4,
+            life: 20 + Math.random() * 15,
+            color: color,
+            size: 2 + Math.random() * 3
+        });
+    }
+}
+function updateAndDrawParticles() {
+    for (var i = particles.length - 1; i >= 0; i--) {
+        var p = particles[i];
+        p.x += p.dx;
+        p.y += p.dy;
+        p.life--;
+        if (p.life <= 0) { particles.splice(i, 1); continue; }
+        context.globalAlpha = p.life / 35;
+        context.fillStyle = p.color;
+        context.fillRect(p.x, p.y, p.size, p.size);
+    }
+    context.globalAlpha = 1;
+}
+
+// ===== COMBO MULTIPLIER =====
+var comboCount = 0;
+var comboTimer = 0;
+var comboMultiplier = 1;
+var COMBO_WINDOW = 45; // frames (~0.75s at 60fps)
+function registerHit() {
+    if (comboTimer > 0) {
+        comboCount++;
+        comboMultiplier = Math.min(comboCount, 5); // max 5x
+    } else {
+        comboCount = 1;
+        comboMultiplier = 1;
+    }
+    comboTimer = COMBO_WINDOW;
+}
+function updateCombo() {
+    if (comboTimer > 0) comboTimer--;
+    else { comboCount = 0; comboMultiplier = 1; }
+}
+function drawCombo() {
+    if (comboMultiplier > 1) {
+        context.save();
+        context.fillStyle = '#fed90f';
+        context.font = '16px "Press Start 2P", cursive';
+        context.textAlign = 'right';
+        context.globalAlpha = 0.6 + 0.4 * Math.sin(performance.now() / 100);
+        context.fillText(comboMultiplier + 'x COMBO', canvas.width - WALL_WIDTH - 5, canvas.height - 20);
+        context.restore();
+    }
+}
+
 const NUM_BRICKS_PER_ROW = 14;
 const BRICK_GAP = 2;
 const WALL_WIDTH = 10; // Wall width
@@ -334,6 +419,11 @@ function loop() {
         // Draw Paddle
         drawPaddle();
 
+        // Particles and combo
+        updateAndDrawParticles();
+        updateCombo();
+        drawCombo();
+
         // Draw timer warning
         drawTimerWarning();
 
@@ -475,8 +565,15 @@ function checkBallBrickCollision() {
             // Remove brick from the bricks array
             bricks.splice(i, 1);
 
-            // Increment score
-            ++score;
+            // Sound + particles
+            sfxBrickHit();
+            spawnParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
+
+            // Combo
+            registerHit();
+
+            // Increment score (with combo multiplier)
+            score += comboMultiplier;
             updateScore();
 
             // Bonus time for brick hit
@@ -894,6 +991,7 @@ function beginGame(gesture) {
 var levelFlashTimer = 0;
 
 function advanceLevel() {
+    sfxLevelUp();
     // Cycle to next level, or loop back with bonus
     if (currentLevel < 3) {
         currentLevel++;
@@ -942,6 +1040,7 @@ function startTimer() {
         if (timerSeconds === 10) {
             setBallSpeed(ball.speed * 1.3);
         }
+        if (Math.ceil(timerSeconds) <= 5 && timerSeconds > 0) sfxHurry();
         if (timerSeconds <= 0) {
             clearInterval(timerInterval);
             isGameOver = true;
@@ -957,7 +1056,7 @@ function addBonusTime(sec) {
 
 function updateTimerDisplay() {
     var el = document.getElementById('timer');
-    el.textContent = timerSeconds + 's';
+    el.textContent = Math.ceil(timerSeconds) + 's';
     if (timerSeconds <= 5) {
         el.style.color = '#ff2244';
         el.style.animation = 'pulse 0.4s ease-in-out infinite';
@@ -983,6 +1082,7 @@ function drawTimerWarning() {
 }
 
 function endRound() {
+    sfxGameOver();
     clearInterval(timerInterval);
     gameActive = false;
 
@@ -990,14 +1090,62 @@ function endRound() {
     hideGameOver();
     hideWinScreen();
 
-    // Save score and show end overlay
-    saveScore(score);
+    // Show end overlay (score saved on submit)
     document.getElementById('final-score').textContent = 'SCORE: ' + score;
     renderLeaderboard();
     document.getElementById('end-overlay').style.display = 'flex';
+    // Focus first initial input
+    setTimeout(function(){ document.getElementById('initial-1').focus(); }, 100);
 }
 
 function restartGame() {
+    document.getElementById('end-overlay').style.display = 'none';
+    beginGame(useGesture);
+}
+
+// ===== FULLSCREEN =====
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(function(){});
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// ===== NAME ENTRY =====
+(function() {
+    // Auto-advance between initial inputs
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('initial-input') && e.target.value.length === 1) {
+            var next = e.target.nextElementSibling;
+            if (next && next.classList.contains('initial-input')) next.focus();
+        }
+    });
+    // Allow backspace to go back
+    document.addEventListener('keydown', function(e) {
+        if (e.target.classList.contains('initial-input') && e.key === 'Backspace' && e.target.value === '') {
+            var prev = e.target.previousElementSibling;
+            if (prev && prev.classList.contains('initial-input')) { prev.focus(); prev.value = ''; }
+        }
+    });
+})();
+
+function getInitials() {
+    var a = document.getElementById('initial-1').value.toUpperCase();
+    var b = document.getElementById('initial-2').value.toUpperCase();
+    var c = document.getElementById('initial-3').value.toUpperCase();
+    return (a || '_') + (b || '_') + (c || '_');
+}
+
+function clearInitials() {
+    document.getElementById('initial-1').value = '';
+    document.getElementById('initial-2').value = '';
+    document.getElementById('initial-3').value = '';
+}
+
+function submitAndRestart() {
+    saveScore(score, getInitials());
+    clearInitials();
     document.getElementById('end-overlay').style.display = 'none';
     beginGame(useGesture);
 }
@@ -1012,10 +1160,10 @@ function getLeaderboard() {
     }
 }
 
-function saveScore(s) {
+function saveScore(s, name) {
     var lb = getLeaderboard();
-    lb.push(s);
-    lb.sort(function (a, b) { return b - a; });
+    lb.push({ name: name || '???', score: s });
+    lb.sort(function (a, b) { return b.score - a.score; });
     lb = lb.slice(0, 5);
     localStorage.setItem('breakout_lb', JSON.stringify(lb));
 }
@@ -1026,7 +1174,7 @@ function renderLeaderboard() {
     list.innerHTML = '';
     for (var i = 0; i < lb.length; i++) {
         var li = document.createElement('li');
-        li.textContent = (i + 1) + '. ' + lb[i] + ' pts';
+        li.textContent = (i + 1) + '. ' + lb[i].name + ' - ' + lb[i].score + ' pts';
         list.appendChild(li);
     }
     if (lb.length === 0) {
