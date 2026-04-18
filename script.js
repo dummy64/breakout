@@ -289,7 +289,7 @@ function updateScore() {
 }
 
 function updateBallSpeed() {
-    if (ball.speed >= 4) return;
+    if (ball.speed >= 3.5) return;
     const speedIncreaseFactor = 1.3;
     ball.speed *= speedIncreaseFactor;
 
