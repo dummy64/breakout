@@ -289,7 +289,7 @@ function updateScore() {
 }
 
 function updateBallSpeed() {
-    if (ball.speed >= 4.5) return;
+    if (ball.speed >= 4) return;
     const speedIncreaseFactor = 1.3;
     ball.speed *= speedIncreaseFactor;
 
@@ -324,8 +324,10 @@ function resetBall() {
     ball.x = canvas.width / 2;
     ball.y = paddle.y - ball.height;
     ball.speed = 3;
-    ball.dx = ball.speed * (Math.random() < 0.5 ? -1 : 1);
-    ball.dy = -ball.speed;
+    // Random angle between 30° and 150° (always upward, varied direction)
+    var angle = (30 + Math.random() * 120) * Math.PI / 180;
+    ball.dx = ball.speed * Math.cos(angle);
+    ball.dy = -ball.speed * Math.abs(Math.sin(angle));
 }
 
 function resetPaddle() {
