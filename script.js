@@ -6,7 +6,7 @@ let timerInterval = null;
 const TIMER_DURATION = 90;
 
 const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 600;
+const CANVAS_HEIGHT = 700;
 
 // ===== SOUND ENGINE (Web Audio oscillator, no files needed) =====
 var audioCtx = null;
