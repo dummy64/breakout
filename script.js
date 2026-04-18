@@ -5,8 +5,8 @@ let timerSeconds = 30;
 let timerInterval = null;
 const TIMER_DURATION = 90;
 
-const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 500;
+const CANVAS_WIDTH = 960;
+const CANVAS_HEIGHT = 450;
 
 // ===== SOUND ENGINE (Web Audio oscillator, no files needed) =====
 var audioCtx = null;
@@ -323,7 +323,7 @@ function hideWinScreen() {
 function resetBall() {
     ball.x = canvas.width / 2;
     ball.y = paddle.y - ball.height;
-    ball.speed = 4;
+    ball.speed = 3;
     ball.dx = ball.speed * (Math.random() < 0.5 ? -1 : 1);
     ball.dy = -ball.speed;
 }
