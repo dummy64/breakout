@@ -5,8 +5,8 @@ let timerSeconds = 30;
 let timerInterval = null;
 const TIMER_DURATION = 90;
 
-const CANVAS_WIDTH = 600;
-const CANVAS_HEIGHT = 700;
+const CANVAS_WIDTH = 800;
+const CANVAS_HEIGHT = 500;
 
 // ===== SOUND ENGINE (Web Audio oscillator, no files needed) =====
 var audioCtx = null;
@@ -93,11 +93,11 @@ function drawCombo() {
     }
 }
 
-const NUM_BRICKS_PER_ROW = 14;
-const BRICK_GAP = 2;
-const WALL_WIDTH = 10; // Wall width
+const NUM_BRICKS_PER_ROW = 10;
+const BRICK_GAP = 3;
+const WALL_WIDTH = 10;
 const BRICK_WIDTH = (CANVAS_WIDTH - (WALL_WIDTH * 2) - (BRICK_GAP * (NUM_BRICKS_PER_ROW - 1))) / NUM_BRICKS_PER_ROW;
-const BRICK_HEIGHT = 16;
+const BRICK_HEIGHT = 18;
 
 const PADDLE_WIDTH = BRICK_WIDTH * 2;
 const PADDLE_HEIGHT = BRICK_HEIGHT / 2;
@@ -115,47 +115,31 @@ const context = canvas.getContext('2d');
 const LVL1 = [
     [],
     [],
-    [],
-    [],
-    [],
-    [],
-    ['C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'],
-    ['R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R'],
-    ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'],
-    ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'],
-    ['G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G'],
-    ['L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L'],
-    ['B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'],
-    ['F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F', 'F']
+    ['C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'],
+    ['R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R'],
+    ['O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O'],
+    ['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'],
+    ['G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G']
 ];
 
 const LVL2 = [
     [],
-    [],
-    ['C', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'R', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'X', 'O', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'X', 'X', 'Y', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'X', 'X', 'X', 'G', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'X', 'X', 'X', 'X', 'L', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'X', 'X', 'X', 'X', 'X', 'B', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'F', 'X', 'X', 'X', 'X', 'X', 'X']
+    ['C', 'X', 'C', 'X', 'C', 'X', 'C', 'X', 'C', 'X'],
+    ['X', 'R', 'X', 'R', 'X', 'R', 'X', 'R', 'X', 'R'],
+    ['O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
+    ['X', 'Y', 'X', 'Y', 'X', 'Y', 'X', 'Y', 'X', 'Y'],
+    ['G', 'X', 'G', 'X', 'G', 'X', 'G', 'X', 'G', 'X']
 ];
 
 const LVL3 = [
     [],
-    ['X', 'F', 'X', 'X', 'X', 'X', 'X', 'F', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['F', 'X', 'F', 'X', 'X', 'X', 'F', 'X', 'F', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'F', 'X', 'C', 'X', 'C', 'X', 'F', 'X', 'F', 'X', 'X', 'X', 'X'],
-    ['F', 'X', 'F', 'P', 'C', 'P', 'F', 'X', 'F', 'X', 'F', 'X', 'X', 'X'],
-    ['X', 'F', 'X', 'C', 'X', 'C', 'X', 'F', 'X', 'F', 'X', 'F', 'X', 'X'],
-    ['F', 'X', 'F', 'X', 'C', 'X', 'F', 'X', 'F', 'X', 'F', 'X', 'X', 'X'],
-    ['X', 'F', 'X', 'C', 'X', 'C', 'X', 'F', 'X', 'F', 'X', 'X', 'X', 'X'],
-    ['F', 'X', 'F', 'X', 'C', 'X', 'F', 'X', 'F', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'F', 'X', 'C', 'X', 'C', 'X', 'F', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'X', 'F', 'X', 'C', 'X', 'F', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'X', 'X', 'C', 'X', 'C', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'X', 'X', 'X', 'C', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X']
+    ['X', 'X', 'F', 'F', 'F', 'F', 'F', 'F', 'X', 'X'],
+    ['X', 'B', 'X', 'X', 'X', 'X', 'X', 'X', 'B', 'X'],
+    ['L', 'X', 'X', 'C', 'X', 'X', 'C', 'X', 'X', 'L'],
+    ['G', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'G'],
+    ['X', 'Y', 'X', 'X', 'R', 'R', 'X', 'X', 'Y', 'X'],
+    ['X', 'X', 'O', 'X', 'X', 'X', 'X', 'O', 'X', 'X'],
+    ['X', 'X', 'X', 'R', 'R', 'R', 'R', 'X', 'X', 'X']
 ];
 
 // Map color names to characters for ease-of-change
@@ -292,12 +276,15 @@ function collides(obj1, obj2) {
         obj1.y + obj1.height > obj2.y;
 }
 
+var bricksHitTotal = 0;
+
 function updateScore() {
     const scoreElement = document.getElementById('score');
     scoreElement.textContent = `Score: ${score}`;
 
-    // Increase ball speed every 20 points
-    if (score % 20 == 0) {
+    // Increase ball speed every 10 bricks destroyed
+    bricksHitTotal++;
+    if (bricksHitTotal % 10 === 0) {
         updateBallSpeed();
     }
 }
@@ -977,6 +964,7 @@ function beginGame(gesture) {
     gameActive = true;
     currentLevel = 1;
     levelFlashTimer = 0;
+    bricksHitTotal = 0;
 
     // Hide start overlay
     document.getElementById('start-overlay').style.display = 'none';
