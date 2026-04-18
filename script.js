@@ -3,7 +3,7 @@ let useGesture = false;          // true = hand control, false = keyboard
 let gameActive = false;          // true once player starts a round
 let timerSeconds = 30;
 let timerInterval = null;
-const TIMER_DURATION = 60;
+const TIMER_DURATION = 90;
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 700;
@@ -335,10 +335,10 @@ function hideWinScreen() {
 // When initializing or resetting the ball's position and movement
 function resetBall() {
     ball.x = canvas.width / 2;
-    ball.y = paddle.y - ball.height; // Position the ball just above the paddle
-    ball.speed = 1;
-    ball.dx = ball.speed * (Math.random() < 0.5 ? -1 : 1); // Randomize left or right direction
-    ball.dy = -ball.speed; // Always move up
+    ball.y = paddle.y - ball.height;
+    ball.speed = 2;
+    ball.dx = ball.speed * (Math.random() < 0.5 ? -1 : 1);
+    ball.dy = -ball.speed;
 }
 
 function resetPaddle() {
@@ -577,7 +577,7 @@ function checkBallBrickCollision() {
             updateScore();
 
             // Bonus time for brick hit
-            if (gameActive) addBonusTime(0.5);
+            if (gameActive) addBonusTime(1);
 
             // Decrement Powerup Cooldown
             --powerupCooldown;
@@ -1050,7 +1050,7 @@ function startTimer() {
 }
 
 function addBonusTime(sec) {
-    timerSeconds = Math.min(timerSeconds + sec, 90);
+    timerSeconds = Math.min(timerSeconds + sec, 120);
     updateTimerDisplay();
 }
 
