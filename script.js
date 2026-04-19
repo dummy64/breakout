@@ -9,16 +9,16 @@ const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 700;
 
 // ===== SOUND ENGINE (Web Audio oscillator, no files needed) =====
-var audioCtx = null;
+let audioCtx = null;
 function getAudioCtx() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     return audioCtx;
 }
 function playTone(freq, duration, type) {
     try {
-        var ctx = getAudioCtx();
-        var osc = ctx.createOscillator();
-        var gain = ctx.createGain();
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.type = type || 'square';
         osc.frequency.value = freq;
         gain.gain.setValueAtTime(0.12, ctx.currentTime);
@@ -35,9 +35,9 @@ function sfxGameOver()  { playTone(200, 0.3, 'sawtooth'); setTimeout(function(){
 function sfxHurry()     { playTone(880, 0.05, 'square'); }
 
 // ===== PARTICLES =====
-var particles = [];
+const particles = [];
 function spawnParticles(x, y, color) {
-    for (var i = 0; i < 8; i++) {
+    for (let i = 0; i < 8; i++) {
         particles.push({
             x: x, y: y,
             dx: (Math.random() - 0.5) * 4,
@@ -49,8 +49,8 @@ function spawnParticles(x, y, color) {
     }
 }
 function updateAndDrawParticles() {
-    for (var i = particles.length - 1; i >= 0; i--) {
-        var p = particles[i];
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
         p.x += p.dx;
         p.y += p.dy;
         p.life--;
@@ -63,10 +63,10 @@ function updateAndDrawParticles() {
 }
 
 // ===== COMBO MULTIPLIER =====
-var comboCount = 0;
-var comboTimer = 0;
-var comboMultiplier = 1;
-var COMBO_WINDOW = 45; // frames (~0.75s at 60fps)
+let comboCount = 0;
+let comboTimer = 0;
+let comboMultiplier = 1;
+const COMBO_WINDOW = 45; // frames (~0.75s at 60fps)
 function registerHit() {
     if (comboTimer > 0) {
         comboCount++;
@@ -249,7 +249,7 @@ function setLevelNumber(level) {
 }
 
 function updateLevelText(newLevel) {
-    var levelElement = document.getElementById('level');
+    const levelElement = document.getElementById('level');
     levelElement.textContent = 'LEVEL ' + newLevel;
 }
 
@@ -257,13 +257,10 @@ function getCurrentLevelGrid() {
     switch (currentLevel) {
         case 1:
             return LVL1;
-            break;
         case 2:
             return LVL2;
-            break;
         case 3:
             return LVL3;
-            break;
     }
 }
 
@@ -275,7 +272,7 @@ function collides(obj1, obj2) {
         obj1.y + obj1.height > obj2.y;
 }
 
-var bricksHitTotal = 0;
+let bricksHitTotal = 0;
 
 function updateScore() {
     const scoreElement = document.getElementById('score');
@@ -323,7 +320,7 @@ function resetBall() {
     ball.y = paddle.y - ball.height;
     ball.speed = 3;
     // Random angle between 30° and 150° (always upward, varied direction)
-    var angle = (30 + Math.random() * 120) * Math.PI / 180;
+    const angle = (30 + Math.random() * 120) * Math.PI / 180;
     ball.dx = ball.speed * Math.cos(angle);
     ball.dy = -ball.speed * Math.abs(Math.sin(angle));
 }
@@ -344,9 +341,9 @@ function resetPaddle() {
 const POWERUP_CHANCE = 0.6;
 const POWERUP_COOLDOWN = 3;
 
-const WIDE_BAR_DURATION = 6;
-const SLOW_BALL_DURATION = 3;
-const BIG_BALL_DURATION = 6;
+const WIDE_BAR_DURATION = 360;
+const SLOW_BALL_DURATION = 180;
+const BIG_BALL_DURATION = 360;
 
 // Global flags for each powerup
 let slowBallActive = false;
@@ -356,10 +353,6 @@ let bigBallActive = false;
 
 let powerupDuration = 0;
 let powerupCooldown = POWERUP_COOLDOWN;
-
-let widePaddleDuration = 0;
-let slowBallDuration = 0;
-let bigBallDuration = 0;
 
 let previousBallSpeed = 1;
 
@@ -380,9 +373,12 @@ isPaused = true;
     }
 })();
 
+let loopRunning = false;
+
 function loop() {
     if (!isGameOver && !isPaused) {
         // Ensure next frame is scheduled before current frame logic is processed for smoother animations
+        loopRunning = true;
         requestAnimationFrame(loop);
         context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -411,6 +407,9 @@ function loop() {
         updateCombo();
         drawCombo();
 
+        // Update powerup durations
+        updatePowerupGauge();
+
         // Draw timer warning
         drawTimerWarning();
 
@@ -423,10 +422,12 @@ function loop() {
         }
     }
     else if (isPaused) {
+        loopRunning = false;
         // Render the pause menu
         showPauseMenu();
     }
     else {
+        loopRunning = false;
         if (bricks.length == 0) {
             showWinScreen();
         }
@@ -436,18 +437,23 @@ function loop() {
     }
 }
 
+let pauseCanvas = null;
+let pauseContext = null;
+
 function showPauseMenu() {
-    // Create an offscreen canvas
-    let offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = canvas.width;
-    offscreenCanvas.height = canvas.height;
-    let offscreenContext = offscreenCanvas.getContext('2d');
+    // Reuse offscreen canvas
+    if (!pauseCanvas) {
+        pauseCanvas = document.createElement('canvas');
+        pauseCanvas.width = canvas.width;
+        pauseCanvas.height = canvas.height;
+        pauseContext = pauseCanvas.getContext('2d');
+    }
 
     // Draw the current game state to the offscreen canvas
-    offscreenContext.drawImage(canvas, 0, 0);
+    pauseContext.drawImage(canvas, 0, 0);
 
     // Draw the blurred image back to the main canvas
-    context.drawImage(offscreenCanvas, 0, 0);
+    context.drawImage(pauseCanvas, 0, 0);
 
     // Semi-transparent overlay
     context.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -464,26 +470,6 @@ function showPauseMenu() {
     context.fillText('3. Level 3', canvas.width / 2, 300);
 }
 
-function showStartMessage() {
-    // Create an offscreen canvas
-    let offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = canvas.width;
-    offscreenCanvas.height = canvas.height;
-    let offscreenContext = offscreenCanvas.getContext('2d');
-
-    // Draw the current game state to the offscreen canvas
-    offscreenContext.drawImage(canvas, 0, 0);
-
-    // Set text properties
-    context.fillStyle = '#FFFFFF'; // White color for text
-    context.font = '18px "Press Start 2P", cursive'; // Your desired font
-    context.textAlign = 'center';
-    context.textBaseline = 'middle'; // Align text in the middle vertically
-
-    // Draw the text at the center of the canvas
-    context.fillText('-- Press Spacebar To Start --', canvas.width / 2, canvas.height / 2);
-}
-
 //////////////////////////////
 /// GAME FUNCTIONS
 /////////////////////////
@@ -491,14 +477,15 @@ function showStartMessage() {
 // Add: 1. AI OVERRIDE 2. MULTI-BALL
 const POWERUP_TYPES = {
     WIDER_BAR: 'wider_bar',
-    BIG_BALL: 'big_ball'
+    BIG_BALL: 'big_ball',
+    SLOW_BALL: 'slow_ball'
 }
 
 function movePaddle() {
     // Gesture control: directly set paddle.x from hand position
     if (useGesture && window.gestureState && window.gestureState.active) {
-        var playArea = CANVAS_WIDTH - (WALL_WIDTH * 2) - paddle.width;
-        var targetX = WALL_WIDTH + window.gestureState.paddleX * playArea;
+        const playArea = CANVAS_WIDTH - (WALL_WIDTH * 2) - paddle.width;
+        const targetX = WALL_WIDTH + window.gestureState.paddleX * playArea;
         paddle.x = targetX;
         paddle.dx = 0; // suppress keyboard velocity during gesture
     } else {
@@ -567,9 +554,6 @@ function checkBallBrickCollision() {
 
             // Decrement Powerup Cooldown
             --powerupCooldown;
-
-            // Update Powerup Gauge
-            updatePowerupGauge();
 
             // Check For Powerup Chance
             checkForRandomPowerupChance();
@@ -650,10 +634,6 @@ function checkForRandomPowerupChance() {
 
 function updatePowerupGauge() {
     if (powerupDuration > 0) {
-        // Decrease the duration of the wide paddle powerup
-        if (widePaddleActive) {
-            --powerupDuration;
-        }
         --powerupDuration;
 
         if (powerupDuration === 0) {
@@ -720,9 +700,11 @@ function resetGame(levelSelection) {
     powerupDuration = 0;
     powerupCooldown = POWERUP_COOLDOWN;
 
-    widePaddleDuration = 0;
-    slowBallDuration = 0;
-    bigBallDuration = 0;
+    // Reset hit counter and combo
+    bricksHitTotal = 0;
+    comboCount = 0;
+    comboTimer = 0;
+    comboMultiplier = 1;
 
     // Reset any powerups if active
     setBallSpeed(ORIGINAL_BALL_SPEED);
@@ -741,7 +723,7 @@ function resetGame(levelSelection) {
     resetPaddle(); 
 
     // Restart the game loop
-    requestAnimationFrame(loop);
+    if (!loopRunning) requestAnimationFrame(loop);
 }
 
 //////////////////////////////
@@ -790,7 +772,7 @@ document.addEventListener('keydown', function (event) {
         isPaused = !isPaused;
         if (!isPaused) {
             // Resume the game
-            requestAnimationFrame(loop);
+            if (!loopRunning) requestAnimationFrame(loop);
         }
     }
     else if (isPaused) {
@@ -821,42 +803,41 @@ canvas.addEventListener('touchmove', handleTouchMove, false);
 canvas.addEventListener('touchend', handleTouchEnd, false);
 let gameStarted = false;
 
-// Listen for touchstart events on the canvas
-canvas.addEventListener('touchstart', function (e) {
-    // Get the touch coordinates
-    const touchX = e.touches[0].clientX;
-    const touchY = e.touches[0].clientY;
-
-    // Adjust touch coordinates for canvas position
-    const canvasRect = canvas.getBoundingClientRect();
-    const canvasScaleX = canvas.width / canvasRect.width; // scale factor for width
-    const canvasScaleY = canvas.height / canvasRect.height; // scale factor for height
-
-    const canvasTouchX = (touchX - canvasRect.left) * canvasScaleX;
-    const canvasTouchY = (touchY - canvasRect.top) * canvasScaleY;
-
-    // Check if the touch is within the paddle's bounds
-    if (
-        canvasTouchX >= paddle.x &&
-        canvasTouchX <= paddle.x + paddle.width &&
-        canvasTouchY >= paddle.y &&
-        canvasTouchY <= paddle.y + paddle.height
-    ) {
-        // If the game hasn't started, start the game
-        if (!gameStarted) {
-            gameStarted = true;
-            resetBall(); // Start the ball movement
-            loop(); // Start the game loop
-        }
-    }
-}, false);
-
 let lastTouchX;
 
+function getCanvasTouch(e) {
+    const touchX = e.touches[0].clientX;
+    const touchY = e.touches[0].clientY;
+    const canvasRect = canvas.getBoundingClientRect();
+    return {
+        x: (touchX - canvasRect.left) * (canvas.width / canvasRect.width),
+        y: (touchY - canvasRect.top) * (canvas.height / canvasRect.height)
+    };
+}
+
+function isTouchOnPaddle(ct) {
+    return ct.x >= paddle.x && ct.x <= paddle.x + paddle.width &&
+           ct.y >= paddle.y && ct.y <= paddle.y + paddle.height;
+}
+
 function handleTouchStart(e) {
+    e.preventDefault();
     const touch = e.touches[0];
     lastTouchX = touch.clientX;
-    e.preventDefault(); // Prevent scrolling when touching the canvas
+
+    const ct = getCanvasTouch(e);
+
+    if (!gameStarted && isTouchOnPaddle(ct)) {
+        gameStarted = true;
+        resetBall();
+        if (!loopRunning) requestAnimationFrame(loop);
+        return;
+    }
+
+    if (isGameOver && isTouchOnPaddle(ct)) {
+        resetGame(getCurrentLevelGrid());
+        isGameOver = false;
+    }
 }
 
 function handleTouchMove(e) {
@@ -864,8 +845,10 @@ function handleTouchMove(e) {
     const deltaX = touch.clientX - lastTouchX;
     lastTouchX = touch.clientX;
 
-    // Move paddle based on the change in touch position
-    paddle.x += deltaX;
+    // Scale screen delta to canvas coordinates
+    const canvasRect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / canvasRect.width;
+    paddle.x += deltaX * scaleX;
 
     // Prevent the paddle from going out of bounds
     if (paddle.x < WALL_WIDTH) {
@@ -910,48 +893,16 @@ levelElement.addEventListener('touchstart', function (e) {
     // Resume the game if paused
     if (isPaused) {
         isPaused = false;
-        requestAnimationFrame(loop);
+        if (!loopRunning) requestAnimationFrame(loop);
     }
-}, false);
-
-canvas.addEventListener('touchstart', function (e) {
-    if (isGameOver) {
-        const touchX = e.touches[0].clientX;
-        const touchY = e.touches[0].clientY;
-
-        const canvasRect = canvas.getBoundingClientRect();
-        const canvasScaleX = canvas.width / canvasRect.width;
-        const canvasScaleY = canvas.height / canvasRect.height;
-
-        const canvasTouchX = (touchX - canvasRect.left) * canvasScaleX;
-        const canvasTouchY = (touchY - canvasRect.top) * canvasScaleY;
-
-        // Check if the touch is within the paddle's bounds
-        if (
-            canvasTouchX >= paddle.x &&
-            canvasTouchX <= paddle.x + paddle.width &&
-            canvasTouchY >= paddle.y &&
-            canvasTouchY <= paddle.y + paddle.height
-        ) {
-            // Restart the game
-            resetGame(getCurrentLevelGrid());
-            isGameOver = false; // Reset the game over state
-        }
-    }
-
-    e.preventDefault();
 }, false);
 
 window.addEventListener('deviceorientation', handleTilt);
 
 function handleTilt(e) {
-    // Get the device tilt from the event
-    const gamma = e.gamma; // Represents the left to right tilt in degrees
-
-    // Set the paddle velocity based on the tilt
-    // You may need to adjust the sensitivity to get the desired responsiveness
+    if (e.gamma == null) return;
     const sensitivity = 1.5;
-    paddle.dx = gamma * sensitivity;
+    paddle.dx = e.gamma * sensitivity;
 }
 
 //////////////////////////////
@@ -975,7 +926,7 @@ function beginGame(gesture) {
     startTimer();
 }
 
-var levelFlashTimer = 0;
+let levelFlashTimer = 0;
 
 function advanceLevel() {
     sfxLevelUp();
@@ -1017,8 +968,6 @@ function startWithKeyboard() {
 
 function startTimer() {
     timerSeconds = TIMER_DURATION;
-    timerMs = TIMER_DURATION * 1000;
-    lastTimerTick = performance.now();
     updateTimerDisplay();
     clearInterval(timerInterval);
     timerInterval = setInterval(function () {
@@ -1039,7 +988,7 @@ function addBonusTime(sec) {
 }
 
 function updateTimerDisplay() {
-    var el = document.getElementById('timer');
+    const el = document.getElementById('timer');
     el.textContent = Math.ceil(timerSeconds) + 's';
     if (timerSeconds <= 5) {
         el.style.color = '#ff2244';
@@ -1098,7 +1047,7 @@ function toggleFullscreen() {
 
 // ===== NAME ENTRY =====
 function submitAndRestart() {
-    var name = document.getElementById('player-name').value.trim() || 'Anonymous';
+    const name = document.getElementById('player-name').value.trim() || 'Anonymous';
     saveScore(score, name, Math.ceil(timerSeconds), currentLevel);
     document.getElementById('player-name').value = '';
     document.getElementById('end-overlay').style.display = 'none';
@@ -1116,7 +1065,7 @@ function getAllScores() {
 }
 
 function saveScore(s, name, timeLeft, level) {
-    var entry = {
+    const entry = {
         name: name,
         score: s,
         timeLeft: timeLeft,
@@ -1124,20 +1073,20 @@ function saveScore(s, name, timeLeft, level) {
         date: new Date().toLocaleString()
     };
     // Save to full history
-    var all = getAllScores();
+    const all = getAllScores();
     all.push(entry);
     localStorage.setItem('breakout_all', JSON.stringify(all));
 }
 
 function renderLeaderboard() {
-    var all = getAllScores();
+    const all = getAllScores();
     // Sort by score descending for display
     all.sort(function (a, b) { return b.score - a.score; });
-    var top = all.slice(0, 10);
-    var list = document.getElementById('lb-list');
+    const top = all.slice(0, 10);
+    const list = document.getElementById('lb-list');
     list.innerHTML = '';
-    for (var i = 0; i < top.length; i++) {
-        var li = document.createElement('li');
+    for (let i = 0; i < top.length; i++) {
+        const li = document.createElement('li');
         li.textContent = (i + 1) + '. ' + top[i].name + ' - ' + top[i].score + ' pts (L' + top[i].level + ', ' + top[i].timeLeft + 's left)';
         list.appendChild(li);
     }

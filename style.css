@@ -1,3 +1,15 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+:root {
+    --color-background: #000119;
+    --stroke-width: calc(1em / 16);
+    --font-size: 40px;
+    --font-weight: 700;
+    --letter-spacing: calc(1em / 8);
+}
+
 html, body {
     height: 100%;
     margin: 0;
@@ -70,15 +82,6 @@ body {
     font-size: 2em; /* Adjust as needed */
     text-align: center;
     z-index: 10; /* Make sure this is above the canvas layer */
-}
-
-#pwr {
-    display: block; /* Initially hidden; set to block or flex when the game is over */
-    position: relative;
-    color: white; /* Or any color you want */
-    font-family: 'Press Start 2P', cursive;
-    font-size: 2em; /* Adjust as needed */
-    text-align: center;
 }
 
 #powerupText {
@@ -159,19 +162,6 @@ p {
 }
 
 /* POWERUP CSS TEXT EFFECTS */
-
-:root {
-    --color-background: #000119;
-    --stroke-width: calc(1em / 16);
-    --font-size: 40px;
-    --font-weight: 700;
-    --letter-spacing: calc(1em / 8);
-}
-
-* {
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-}
 
 
 /* ===== GESTURE EDITION ADDITIONS ===== */
