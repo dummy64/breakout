@@ -900,7 +900,7 @@ levelElement.addEventListener('touchstart', function (e) {
 window.addEventListener('deviceorientation', handleTilt);
 
 function handleTilt(e) {
-    if (e.gamma == null) return;
+    if (e.gamma == null || leftArrowPressed || rightArrowPressed) return;
     const sensitivity = 1.5;
     paddle.dx = e.gamma * sensitivity;
 }
